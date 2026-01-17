@@ -13,6 +13,7 @@ export interface Post {
     tags: string[];
     content: string;
     coverImage?: string;
+    externalUrl?: string;
 }
 
 export async function getAllPosts(): Promise<Post[]> {
@@ -29,6 +30,7 @@ export async function getAllPosts(): Promise<Post[]> {
             description: data.description || '',
             tags: data.tags || [],
             coverImage: data.coverImage,
+            externalUrl: data.externalUrl,
             content: markdownBody
         };
     });

@@ -3,7 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { getPostBySlug, type Post } from '../lib/posts';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { Loader2, ArrowLeft, Calendar, Tag } from 'lucide-react';
+import { Loader2, ArrowLeft, ArrowRight, Calendar, Tag } from 'lucide-react';
 import { Button } from '../components/Button';
 
 export function BlogPost() {
@@ -85,6 +85,20 @@ export function BlogPost() {
                 </div>
 
                 <div className="prose prose-invert prose-lg prose-slate max-w-none prose-headings:text-white prose-a:text-primary-400 hover:prose-a:text-primary-300 prose-img:rounded-xl">
+                    {post.externalUrl && (
+                        <div className="not-prose mb-8 p-6 rounded-xl bg-slate-900 border border-slate-800 flex flex-col md:flex-row items-center justify-between gap-4">
+                            <div>
+                                <h3 className="text-lg font-semibold text-white mb-1">Read the full article</h3>
+                                <p className="text-slate-400 text-sm">This is an external source. Click the button to view the original content.</p>
+                            </div>
+                            <a href={post.externalUrl} target="_blank" rel="noopener noreferrer">
+                                <Button className="whitespace-nowrap">
+                                    Visit Website
+                                    <ArrowRight className="w-4 h-4 ml-2 -rotate-45" />
+                                </Button>
+                            </a>
+                        </div>
+                    )}
                     <ReactMarkdown remarkPlugins={[remarkGfm]}>
                         {post.content}
                     </ReactMarkdown>

@@ -63,7 +63,7 @@ export function Blog() {
                                         />
                                     </div>
                                 )}
-                                <div className="p-6">
+                                <div className="p-6 flex flex-col h-[calc(100%-12rem)]">
                                     <div className="flex gap-2 mb-4 overflow-x-auto no-scrollbar">
                                         {post.tags.map(tag => (
                                             <span key={tag} className="text-xs font-medium text-primary-400 bg-primary-900/20 px-2 py-1 rounded-full whitespace-nowrap">
@@ -71,25 +71,47 @@ export function Blog() {
                                             </span>
                                         ))}
                                     </div>
-                                    <Link to={`/blog/${post.slug}`}>
-                                        <h2 className="text-xl font-bold mb-3 group-hover:text-primary-400 transition-colors">
-                                            {post.title}
-                                        </h2>
-                                    </Link>
-                                    <p className="text-slate-400 mb-6 text-sm line-clamp-3">
+
+                                    {post.externalUrl ? (
+                                        <a href={post.externalUrl} target="_blank" rel="noopener noreferrer" className="block">
+                                            <h2 className="text-xl font-bold mb-3 group-hover:text-primary-400 transition-colors flex items-start gap-2">
+                                                {post.title}
+                                                <ArrowRight className="w-4 h-4 mt-1.5 -rotate-45 shrink-0 opacity-50" />
+                                            </h2>
+                                        </a>
+                                    ) : (
+                                        <Link to={`/blog/${post.slug}`}>
+                                            <h2 className="text-xl font-bold mb-3 group-hover:text-primary-400 transition-colors">
+                                                {post.title}
+                                            </h2>
+                                        </Link>
+                                    )}
+
+                                    <p className="text-slate-400 mb-6 text-sm line-clamp-3 flex-grow">
                                         {post.description}
                                     </p>
-                                    <div className="flex items-center justify-between mt-auto">
+
+                                    <div className="flex items-center justify-between mt-auto pt-4 border-t border-slate-800/50">
                                         <div className="flex items-center text-slate-500 text-xs gap-1">
                                             <Calendar className="w-4 h-4" />
                                             {new Date(post.date).toLocaleDateString()}
                                         </div>
-                                        <Link to={`/blog/${post.slug}`}>
-                                            <Button variant="ghost" size="sm" className="group/btn">
-                                                Read
-                                                <ArrowRight className="w-4 h-4 ml-2 group-hover/btn:translate-x-1 transition-transform" />
-                                            </Button>
-                                        </Link>
+
+                                        {post.externalUrl ? (
+                                            <a href={post.externalUrl} target="_blank" rel="noopener noreferrer">
+                                                <Button variant="ghost" size="sm" className="group/btn">
+                                                    Visit Source
+                                                    <ArrowRight className="w-4 h-4 ml-2 -rotate-45 group-hover/btn:translate-x-1 group-hover/btn:-translate-y-1 transition-transform" />
+                                                </Button>
+                                            </a>
+                                        ) : (
+                                            <Link to={`/blog/${post.slug}`}>
+                                                <Button variant="ghost" size="sm" className="group/btn">
+                                                    Read
+                                                    <ArrowRight className="w-4 h-4 ml-2 group-hover/btn:translate-x-1 transition-transform" />
+                                                </Button>
+                                            </Link>
+                                        )}
                                     </div>
                                 </div>
                             </article>

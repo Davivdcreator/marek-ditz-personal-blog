@@ -16,6 +16,7 @@ export interface BlogPost {
     tags?: string[];
     content: string;
     sha?: string; // For updates
+    externalUrl?: string;
 }
 
 export class GitHubService {
@@ -63,6 +64,7 @@ export class GitHubService {
                             description: data.description || '',
                             coverImage: data.coverImage,
                             tags: data.tags || [],
+                            externalUrl: data.externalUrl,
                             content,
                             sha: file.sha,
                         });
@@ -85,6 +87,7 @@ export class GitHubService {
             description: post.description,
             coverImage: post.coverImage,
             tags: post.tags,
+            externalUrl: post.externalUrl,
         };
 
         const fileContent = matter.stringify(post.content, frontmatter);
