@@ -81,42 +81,78 @@ export class GitHubService {
 
     async savePost(post: BlogPost): Promise<void> {
         const path = `src/content/posts/${post.slug}.md`;
-        const frontmatter = {
+
+        // Build frontmatter object, explicitly filtering out undefined values
+        const rawFrontmatter = {
             title: post.title,
             date: post.date,
             description: post.description,
             coverImage: post.coverImage,
             tags: post.tags,
-            ...(post.externalUrl ? { externalUrl: post.externalUrl } : {}),
+            externalUrl: post.externalUrl,
         };
 
-        const fileContent = matter.stringify(post.content, frontmatter);
-        const encodedContent = Buffer.from(fileContent).toString('base64');
-
-        // Check if file exists to get SHA for update (if not provided in post object, though usually we should have it)
-        let sha = post.sha;
-        if (!sha) {
-            try {
-                const existing = await this.octokit.rest.repos.getContent({
-                    owner: this.owner,
-                    repo: this.repo,
-                    path,
-                });
-                // @ts-expect-error Output of getContent is union type, we know it's a file
-                sha = existing.data.sha;
-            } catch {
-                // File doesn't exist, strictly creating new
+        // Remove all undefined/null values to prevent YAML serialization errors
+        const frontmatter: Record<string, any> = {};
+        for (const [key, value] of Object.entries(rawFrontmatter)) {
+            if (value !== undefined && value !== null) {
+                frontmatter[key] = value;
             }
         }
 
-        await this.octokit.rest.repos.createOrUpdateFileContents({
-            owner: this.owner,
-            repo: this.repo,
-            path,
-            message: `Content Update: ${post.title}`,
-            content: encodedContent,
-            sha,
-        });
+        // Validate required fields
+        if (!frontmatter.title || !frontmatter.date || !frontmatter.description) {
+            throw new Error(
+                `Missing required fields. Please ensure Title, Date, and Description are filled in.\n` +
+                `Current values:\n` +
+                `- Title: ${frontmatter.title || '(empty)'}\n` +
+                `- Date: ${frontmatter.date || '(empty)'}\n` +
+                `- Description: ${frontmatter.description || '(empty)'}`
+            );
+        }
+
+        try {
+            const fileContent = matter.stringify(post.content, frontmatter);
+            const encodedContent = Buffer.from(fileContent).toString('base64');
+
+            // Check if file exists to get SHA for update (if not provided in post object, though usually we should have it)
+            let sha = post.sha;
+            if (!sha) {
+                try {
+                    const existing = await this.octokit.rest.repos.getContent({
+                        owner: this.owner,
+                        repo: this.repo,
+                        path,
+                    });
+                    // @ts-expect-error Output of getContent is union type, we know it's a file
+                    sha = existing.data.sha;
+                } catch {
+                    // File doesn't exist, strictly creating new
+                }
+            }
+
+            await this.octokit.rest.repos.createOrUpdateFileContents({
+                owner: this.owner,
+                repo: this.repo,
+                path,
+                message: `Content Update: ${post.title}`,
+                content: encodedContent,
+                sha,
+            });
+        } catch (error: any) {
+            // Provide detailed error information
+            if (error.message?.includes('unacceptable kind of an object')) {
+                throw new Error(
+                    `YAML Serialization Error: One of your fields contains an invalid value.\n\n` +
+                    `Please check:\n` +
+                    `- All text fields are properly filled\n` +
+                    `- Tags are comma-separated text (not empty)\n` +
+                    `- Cover Image is either a URL or uploaded file\n\n` +
+                    `Technical details: ${error.message}`
+                );
+            }
+            throw error;
+        }
     }
 
     async uploadImage(file: File, filename: string): Promise<string> {
