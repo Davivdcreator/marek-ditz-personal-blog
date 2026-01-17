@@ -118,4 +118,30 @@ export class GitHubService {
             sha,
         });
     }
+
+    async uploadImage(file: File, filename: string): Promise<string> {
+        // Read file as base64
+        const arrayBuffer = await file.arrayBuffer();
+        const buffer = Buffer.from(arrayBuffer);
+        const encodedContent = buffer.toString('base64');
+
+        // Generate unique filename with timestamp to avoid conflicts
+        const timestamp = Date.now();
+        const extension = filename.split('.').pop();
+        const nameWithoutExt = filename.replace(/\.[^/.]+$/, '');
+        const uniqueFilename = `${nameWithoutExt}-${timestamp}.${extension}`;
+
+        const path = `public/images/uploads/${uniqueFilename}`;
+
+        await this.octokit.rest.repos.createOrUpdateFileContents({
+            owner: this.owner,
+            repo: this.repo,
+            path,
+            message: `Upload image: ${uniqueFilename}`,
+            content: encodedContent,
+        });
+
+        // Return the public URL path (relative to public directory)
+        return `/images/uploads/${uniqueFilename}`;
+    }
 }

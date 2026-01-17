@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/useAuth';
 import { GitHubService, type BlogPost } from '../../lib/github';
 import { Button } from '../../components/Button';
-import { Save, ArrowLeft, Loader2, Image as ImageIcon } from 'lucide-react';
+import { Save, ArrowLeft, Loader2, Upload, Link as LinkIcon } from 'lucide-react';
 
 export function Editor() {
     const { slug } = useParams();
@@ -22,6 +22,9 @@ export function Editor() {
     });
 
     const [tagInput, setTagInput] = useState('');
+    const [uploadMode, setUploadMode] = useState<'url' | 'file'>('url');
+    const [uploading, setUploading] = useState(false);
+    const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
     useEffect(() => {
         if (!isAuthenticated) return;
@@ -73,6 +76,24 @@ export function Editor() {
             alert(`Failed to save post: ${error.message || error}`);
         } finally {
             setSaving(false);
+        }
+    };
+
+    const handleImageUpload = async () => {
+        if (!selectedFile || !token || !repoOwner || !repoName) return;
+        setUploading(true);
+
+        try {
+            const gh = new GitHubService(token, repoOwner, repoName);
+            const imageUrl = await gh.uploadImage(selectedFile, selectedFile.name);
+            setFormData({ ...formData, coverImage: imageUrl });
+            setSelectedFile(null);
+            alert('Image uploaded successfully!');
+        } catch (error: any) {
+            console.error('Failed to upload image:', error);
+            alert(`Failed to upload image: ${error.message || error}`);
+        } finally {
+            setUploading(false);
         }
     };
 
@@ -129,8 +150,33 @@ export function Editor() {
                     </div>
 
                     <div>
-                        <label className="block text-xs font-medium text-slate-500 uppercase tracking-wider mb-2">Cover Image URL</label>
-                        <div className="flex gap-2">
+                        <div className="flex items-center justify-between mb-2">
+                            <label className="block text-xs font-medium text-slate-500 uppercase tracking-wider">Cover Image</label>
+                            <div className="flex gap-1">
+                                <button
+                                    type="button"
+                                    onClick={() => setUploadMode('url')}
+                                    className={`px-2 py-1 text-xs rounded transition-colors ${uploadMode === 'url'
+                                        ? 'bg-primary-500 text-white'
+                                        : 'bg-slate-800 text-slate-400 hover:text-slate-300'
+                                        }`}
+                                >
+                                    <LinkIcon className="w-3 h-3" />
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setUploadMode('file')}
+                                    className={`px-2 py-1 text-xs rounded transition-colors ${uploadMode === 'file'
+                                        ? 'bg-primary-500 text-white'
+                                        : 'bg-slate-800 text-slate-400 hover:text-slate-300'
+                                        }`}
+                                >
+                                    <Upload className="w-3 h-3" />
+                                </button>
+                            </div>
+                        </div>
+
+                        {uploadMode === 'url' ? (
                             <input
                                 type="text"
                                 value={formData.coverImage || ''}
@@ -138,10 +184,49 @@ export function Editor() {
                                 className="w-full bg-slate-800 border-slate-700 rounded-lg text-sm px-3 py-2 text-slate-100"
                                 placeholder="https://..."
                             />
-                            <Button variant="secondary" size="sm" className="px-2">
-                                <ImageIcon className="w-4 h-4" />
-                            </Button>
-                        </div>
+                        ) : (
+                            <div className="space-y-2">
+                                <input
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={e => setSelectedFile(e.target.files?.[0] || null)}
+                                    className="w-full bg-slate-800 border-slate-700 rounded-lg text-sm px-3 py-2 text-slate-100 file:mr-4 file:py-1 file:px-3 file:rounded file:border-0 file:text-sm file:bg-primary-500 file:text-white hover:file:bg-primary-600 file:cursor-pointer"
+                                />
+                                {selectedFile && (
+                                    <Button
+                                        onClick={handleImageUpload}
+                                        disabled={uploading}
+                                        size="sm"
+                                        className="w-full"
+                                    >
+                                        {uploading ? (
+                                            <>
+                                                <Loader2 className="w-3 h-3 mr-2 animate-spin" />
+                                                Uploading...
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Upload className="w-3 h-3 mr-2" />
+                                                Upload Image
+                                            </>
+                                        )}
+                                    </Button>
+                                )}
+                            </div>
+                        )}
+
+                        {formData.coverImage && (
+                            <div className="mt-2">
+                                <img
+                                    src={formData.coverImage}
+                                    alt="Cover preview"
+                                    className="w-full h-32 object-cover rounded-lg border border-slate-700"
+                                    onError={(e) => {
+                                        e.currentTarget.style.display = 'none';
+                                    }}
+                                />
+                            </div>
+                        )}
                     </div>
 
                     <div>
