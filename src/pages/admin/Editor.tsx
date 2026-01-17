@@ -51,7 +51,12 @@ export function Editor() {
 
             // Generate slug from title if new
             const finalSlug = slug === 'new'
-                ? formData.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '')
+                ? formData.title
+                    .normalize('NFD')
+                    .replace(/[\u0300-\u036f]/g, '')
+                    .toLowerCase()
+                    .replace(/[^a-z0-9]+/g, '-')
+                    .replace(/(^-|-$)+/g, '') || 'untitled-post'
                 : slug!;
 
             const postToSave = {
@@ -63,9 +68,9 @@ export function Editor() {
 
             await gh.savePost(postToSave);
             navigate('/admin/dashboard');
-        } catch (error) {
+        } catch (error: any) {
             console.error('Failed to save:', error);
-            alert('Failed to save post. Check console for details.');
+            alert(`Failed to save post: ${error.message || error}`);
         } finally {
             setSaving(false);
         }
@@ -137,6 +142,18 @@ export function Editor() {
                                 <ImageIcon className="w-4 h-4" />
                             </Button>
                         </div>
+                    </div>
+
+                    <div>
+                        <label className="block text-xs font-medium text-slate-500 uppercase tracking-wider mb-2">External Content URL</label>
+                        <input
+                            type="text"
+                            value={formData.externalUrl || ''}
+                            onChange={e => setFormData({ ...formData, externalUrl: e.target.value })}
+                            className="w-full bg-slate-800 border-slate-700 rounded-lg text-sm px-3 py-2 text-slate-100"
+                            placeholder="https://... (Optional)"
+                        />
+                        <p className="text-[10px] text-slate-500 mt-1">If set, this post will link to this URL.</p>
                     </div>
 
                     <div>
