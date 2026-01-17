@@ -1,6 +1,7 @@
 import { Button } from '../components/Button';
 import { ArrowRight, Linkedin } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { Experience } from '../components/Experience';
 
 export function Home() {
     return (
@@ -61,6 +62,9 @@ export function Home() {
                     </div>
                 </div>
             </section>
+
+            {/* Resume / Experience Section */}
+            <Experience />
         </div>
     );
 }
