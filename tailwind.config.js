@@ -8,8 +8,17 @@ export default {
     extend: {
       fontFamily: {
         sans: ['Inter', 'sans-serif'],
+        serif: ['Playfair Display', 'serif'],
       },
       colors: {
+        zen: {
+          white: '#FAFAF9',
+          stone: '#1C1917',
+          gray: '#78716C',
+          'light-gray': '#E7E5E4',
+          moss: '#86EFAC',
+          'moss-dark': '#4ADE80',
+        },
         primary: {
           50: '#ecfdf5',
           100: '#d1fae5',
@@ -23,6 +32,14 @@ export default {
           900: '#064e3b',
           950: '#022c22',
         }
+      },
+      spacing: {
+        'zen-xs': '1rem',
+        'zen-sm': '2rem',
+        'zen-md': '4rem',
+        'zen-lg': '6rem',
+        'zen-xl': '10rem',
+        'zen-2xl': '16rem',
       }
     },
   },
@@ -30,4 +47,3 @@ export default {
     require('@tailwindcss/typography'),
   ],
 }
-

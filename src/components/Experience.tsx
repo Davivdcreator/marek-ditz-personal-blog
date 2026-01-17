@@ -1,63 +1,77 @@
-import { experience, education, type ExperienceItem } from '../data/resume';
-import { Briefcase, GraduationCap, Calendar, ChevronDown, ChevronUp } from 'lucide-react';
 import { useState } from 'react';
+import { ChevronDown, ChevronUp } from 'lucide-react';
+import { experience, education, type ExperienceItem, type EducationItem } from '../data/resume';
 
-function ExperienceCard({ item }: { item: ExperienceItem }) {
+function ExperienceCard({ item, index }: { item: ExperienceItem | EducationItem; index: number }) {
     const [isOpen, setIsOpen] = useState(false);
 
-    return (
-        <div className="relative group">
-            {/* Dot */}
-            <div className="absolute -left-[41px] md:-left-[59px] top-1.5 w-5 h-5 rounded-full border-4 border-slate-950 bg-slate-700 group-hover:bg-primary-500 transition-colors" />
+    // Type guard to check if item is ExperienceItem
+    const isExperience = (item: ExperienceItem | EducationItem): item is ExperienceItem => {
+        return 'company' in item;
+    };
 
-            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-1 mb-2">
-                <h3 className="text-xl font-bold text-white group-hover:text-primary-400 transition-colors">
-                    {item.role}
-                </h3>
-                <div className="flex items-center text-xs font-medium text-slate-500 bg-slate-900/50 px-3 py-1 rounded-full whitespace-nowrap w-fit mt-2 sm:mt-0">
-                    <Calendar className="w-3 h-3 mr-1.5" />
-                    {item.period}
+    return (
+        <div
+            className="group relative bg-white border border-zen-light-gray rounded-2xl p-8 hover:shadow-xl transition-all duration-500 hover:-translate-y-1"
+            style={{
+                animationDelay: `${index * 150}ms`,
+            }}
+        >
+            {/* Stone decoration */}
+            <div className="absolute -top-3 -left-3 w-6 h-6 rounded-full bg-zen-moss/30 group-hover:bg-zen-moss/50 transition-colors duration-500" />
+
+            <div className="flex items-start justify-between gap-4 mb-4">
+                <div className="flex-1">
+                    <h3 className="text-2xl font-serif text-zen-stone mb-2">
+                        {isExperience(item) ? item.role : item.degree}
+                    </h3>
+                    <p className="text-zen-gray font-medium mb-1">
+                        {isExperience(item) ? item.company : item.school}
+                    </p>
+                    <p className="text-sm text-zen-gray/70">
+                        {isExperience(item) ? item.period : item.year}
+                    </p>
                 </div>
             </div>
 
-            <div className="text-lg text-slate-300 font-medium mb-3">
-                {item.company}
-            </div>
+            {isExperience(item) && (
+                <>
+                    <p className="text-zen-gray leading-relaxed mb-4">
+                        {item.description}
+                    </p>
 
-            <p className="text-slate-400 text-sm leading-relaxed max-w-2xl mb-4">
-                {item.description}
-            </p>
+                    {item.achievements && item.achievements.length > 0 && (
+                        <div>
+                            <button
+                                onClick={() => setIsOpen(!isOpen)}
+                                className="flex items-center text-sm font-medium text-zen-moss-dark hover:text-zen-moss transition-colors focus:outline-none"
+                            >
+                                {isOpen ? (
+                                    <>
+                                        <ChevronUp className="w-4 h-4 mr-1.5" />
+                                        Hide Achievements
+                                    </>
+                                ) : (
+                                    <>
+                                        <ChevronDown className="w-4 h-4 mr-1.5" />
+                                        Show Achievements
+                                    </>
+                                )}
+                            </button>
 
-            {item.achievements && item.achievements.length > 0 && (
-                <div>
-                    <button
-                        onClick={() => setIsOpen(!isOpen)}
-                        className="flex items-center text-sm font-medium text-primary-500 hover:text-primary-400 transition-colors focus:outline-none"
-                    >
-                        {isOpen ? (
-                            <>
-                                <ChevronUp className="w-4 h-4 mr-1.5" />
-                                Hide Key Achievements
-                            </>
-                        ) : (
-                            <>
-                                <ChevronDown className="w-4 h-4 mr-1.5" />
-                                Show Key Achievements
-                            </>
-                        )}
-                    </button>
-
-                    {isOpen && (
-                        <div className="mt-4 pl-4 border-l border-slate-800 space-y-2 animate-in slide-in-from-top-2 duration-200">
-                            {item.achievements.map((achievement, i) => (
-                                <div key={i} className="text-slate-400 text-sm flex items-start">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-primary-500/50 mt-1.5 mr-3 shrink-0" />
-                                    <span>{achievement}</span>
+                            {isOpen && (
+                                <div className="mt-4 pl-4 border-l-2 border-zen-moss/30 space-y-2 animate-grow">
+                                    {item.achievements.map((achievement: string, i: number) => (
+                                        <div key={i} className="text-zen-gray text-sm flex items-start">
+                                            <span className="w-1.5 h-1.5 rounded-full bg-zen-moss mt-2 mr-3 shrink-0" />
+                                            <span>{achievement}</span>
+                                        </div>
+                                    ))}
                                 </div>
-                            ))}
+                            )}
                         </div>
                     )}
-                </div>
+                </>
             )}
         </div>
     );
@@ -65,32 +79,31 @@ function ExperienceCard({ item }: { item: ExperienceItem }) {
 
 export function Experience() {
     return (
-        <section className="py-24 bg-slate-950/50">
-            <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-                <h2 className="text-3xl font-bold text-white mb-12 flex items-center gap-3">
-                    <Briefcase className="w-8 h-8 text-primary-500" />
-                    Professional Experience
+        <section className="py-zen-xl px-4 md:px-zen-lg bg-zen-white">
+            <div className="max-w-6xl mx-auto">
+                <h2 className="text-5xl md:text-6xl font-serif text-zen-stone mb-4 text-center">
+                    Journey
                 </h2>
+                <p className="text-zen-gray text-center mb-zen-md max-w-2xl mx-auto">
+                    Each role is a stone in the garden, carefully placed to create a path of growth and learning.
+                </p>
 
-                <div className="space-y-12 relative border-l-2 border-slate-800 ml-3 md:ml-6 pl-8 md:pl-12 pb-12">
-                    {experience.map((item, index) => (
-                        <ExperienceCard key={index} item={item} />
-                    ))}
+                {/* Experience */}
+                <div className="mb-zen-lg">
+                    <h3 className="text-2xl font-serif text-zen-stone mb-8">Professional Experience</h3>
+                    <div className="grid md:grid-cols-2 gap-6">
+                        {experience.map((item, index) => (
+                            <ExperienceCard key={index} item={item} index={index} />
+                        ))}
+                    </div>
                 </div>
 
-                <div className="mt-24">
-                    <h2 className="text-3xl font-bold text-white mb-12 flex items-center gap-3">
-                        <GraduationCap className="w-8 h-8 text-primary-500" />
-                        Education
-                    </h2>
-
+                {/* Education */}
+                <div>
+                    <h3 className="text-2xl font-serif text-zen-stone mb-8">Education</h3>
                     <div className="grid md:grid-cols-2 gap-6">
-                        {education.map((edu, index) => (
-                            <div key={index} className="bg-slate-900/40 border border-slate-800 p-6 rounded-xl hover:border-primary-500/30 transition-colors">
-                                <div className="text-primary-400 text-sm font-bold mb-2">{edu.year}</div>
-                                <h3 className="text-xl font-bold text-white mb-1">{edu.school}</h3>
-                                <p className="text-slate-400">{edu.degree}</p>
-                            </div>
+                        {education.map((item, index) => (
+                            <ExperienceCard key={index} item={item} index={index} />
                         ))}
                     </div>
                 </div>

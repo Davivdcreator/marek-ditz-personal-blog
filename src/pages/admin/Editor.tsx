@@ -51,28 +51,14 @@ export function Editor() {
 
         try {
             const gh = new GitHubService(token, repoOwner, repoName);
-
-            // Generate slug from title if new
-            const finalSlug = slug === 'new'
-                ? formData.title
-                    .normalize('NFD')
-                    .replace(/[\u0300-\u036f]/g, '')
-                    .toLowerCase()
-                    .replace(/[^a-z0-9]+/g, '-')
-                    .replace(/(^-|-$)+/g, '') || 'untitled-post'
-                : slug!;
-
-            const postToSave = {
-                ...formData,
-                slug: finalSlug,
-                tags: tagInput.split(',').map(t => t.trim()).filter(Boolean),
-                date: new Date().toISOString() // Update timestamp on save? Optional.
-            };
+            const tags = tagInput.split(',').map(t => t.trim()).filter(Boolean);
+            const postToSave = { ...formData, tags };
 
             await gh.savePost(postToSave);
+            alert('Post saved successfully!');
             navigate('/admin/dashboard');
         } catch (error: any) {
-            console.error('Failed to save:', error);
+            console.error('Failed to save post:', error);
             alert(`Failed to save post: ${error.message || error}`);
         } finally {
             setSaving(false);
@@ -99,27 +85,35 @@ export function Editor() {
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-slate-950 flex items-center justify-center">
-                <Loader2 className="w-8 h-8 text-primary-500 animate-spin" />
+            <div className="min-h-screen bg-zen-white flex items-center justify-center">
+                <Loader2 className="w-8 h-8 text-zen-moss-dark animate-spin" />
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col">
+        <div className="min-h-screen bg-zen-white text-zen-stone flex flex-col">
             {/* Toolbar */}
-            <div className="h-16 border-b border-slate-800 bg-slate-900/50 backdrop-blur px-6 flex items-center justify-between sticky top-0 z-50">
+            <div className="h-16 border-b-2 border-zen-light-gray bg-white backdrop-blur px-6 flex items-center justify-between sticky top-0 z-50 shadow-sm">
                 <div className="flex items-center gap-4">
-                    <Button variant="ghost" onClick={() => navigate('/admin/dashboard')}>
+                    <Button
+                        variant="ghost"
+                        onClick={() => navigate('/admin/dashboard')}
+                        className="border border-zen-light-gray"
+                    >
                         <ArrowLeft className="w-4 h-4 mr-2" />
                         Back
                     </Button>
-                    <span className="text-slate-500">|</span>
-                    <span className="font-semibold text-slate-300">
+                    <span className="text-zen-gray">|</span>
+                    <span className="font-serif font-semibold text-zen-stone">
                         {slug === 'new' ? 'New Post' : 'Editing: ' + formData.title}
                     </span>
                 </div>
-                <Button onClick={handleSave} disabled={saving}>
+                <Button
+                    onClick={handleSave}
+                    disabled={saving}
+                    variant="primary"
+                >
                     {saving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Save className="w-4 h-4 mr-2" />}
                     {saving ? 'Saving...' : 'Save Changes'}
                 </Button>
@@ -127,53 +121,99 @@ export function Editor() {
 
             <div className="flex-grow flex">
                 {/* Meta Sidebar */}
-                <div className="w-80 border-r border-slate-800 bg-slate-900/30 p-6 space-y-6 overflow-y-auto h-[calc(100vh-64px)]">
+                <div className="w-80 border-r-2 border-zen-light-gray bg-zen-light-gray/20 p-6 space-y-6 overflow-y-auto h-[calc(100vh-64px)]">
                     <div>
-                        <label className="block text-xs font-medium text-slate-500 uppercase tracking-wider mb-2">Title</label>
+                        <label className="block text-xs font-medium text-zen-gray uppercase tracking-wider mb-2">Title</label>
                         <input
                             type="text"
                             value={formData.title}
                             onChange={e => setFormData({ ...formData, title: e.target.value })}
-                            className="w-full bg-slate-800 border-slate-700 rounded-lg text-sm px-3 py-2 text-slate-100"
+                            className="w-full bg-white border-2 border-zen-light-gray rounded-lg text-sm px-3 py-2 text-zen-stone focus:border-zen-moss focus:ring-2 focus:ring-zen-moss/20 outline-none"
                             placeholder="Post Title"
                         />
                     </div>
 
                     <div>
-                        <label className="block text-xs font-medium text-slate-500 uppercase tracking-wider mb-2">Description</label>
+                        <label className="block text-xs font-medium text-zen-gray uppercase tracking-wider mb-2">Description</label>
                         <textarea
                             value={formData.description}
                             onChange={e => setFormData({ ...formData, description: e.target.value })}
-                            className="w-full bg-slate-800 border-slate-700 rounded-lg text-sm px-3 py-2 text-slate-100 h-24 resize-none"
+                            className="w-full bg-white border-2 border-zen-light-gray rounded-lg text-sm px-3 py-2 text-zen-stone h-24 resize-none focus:border-zen-moss focus:ring-2 focus:ring-zen-moss/20 outline-none"
                             placeholder="Brief summary..."
                         />
                     </div>
 
                     <div>
-                        <div className="flex items-center justify-between mb-2">
-                            <label className="block text-xs font-medium text-slate-500 uppercase tracking-wider">Cover Image</label>
-                            <div className="flex gap-1">
-                                <button
-                                    type="button"
-                                    onClick={() => setUploadMode('url')}
-                                    className={`px-2 py-1 text-xs rounded transition-colors ${uploadMode === 'url'
-                                        ? 'bg-primary-500 text-white'
-                                        : 'bg-slate-800 text-slate-400 hover:text-slate-300'
-                                        }`}
-                                >
-                                    <LinkIcon className="w-3 h-3" />
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => setUploadMode('file')}
-                                    className={`px-2 py-1 text-xs rounded transition-colors ${uploadMode === 'file'
-                                        ? 'bg-primary-500 text-white'
-                                        : 'bg-slate-800 text-slate-400 hover:text-slate-300'
-                                        }`}
-                                >
-                                    <Upload className="w-3 h-3" />
-                                </button>
-                            </div>
+                        <label className="block text-xs font-medium text-zen-gray uppercase tracking-wider mb-2">Slug</label>
+                        <input
+                            type="text"
+                            value={formData.slug}
+                            onChange={e => setFormData({ ...formData, slug: e.target.value })}
+                            className="w-full bg-white border-2 border-zen-light-gray rounded-lg text-sm px-3 py-2 text-zen-stone font-mono focus:border-zen-moss focus:ring-2 focus:ring-zen-moss/20 outline-none"
+                            placeholder="post-url-slug"
+                        />
+                    </div>
+
+                    <div>
+                        <label className="block text-xs font-medium text-zen-gray uppercase tracking-wider mb-2">Category (Growth Stage)</label>
+                        <select
+                            value={formData.growthStage || ''}
+                            onChange={e => setFormData({ ...formData, growthStage: e.target.value as any || undefined })}
+                            className="w-full bg-white border-2 border-zen-light-gray rounded-lg text-sm px-3 py-2 text-zen-stone focus:border-zen-moss focus:ring-2 focus:ring-zen-moss/20 outline-none"
+                        >
+                            <option value="">Automatic (By Date)</option>
+                            <option value="seed">🌱 Seed (Recent)</option>
+                            <option value="sapling">🌿 Sapling (Developing)</option>
+                            <option value="old-growth">🌳 Old Growth (Mature)</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label className="block text-xs font-medium text-zen-gray uppercase tracking-wider mb-2">Date</label>
+                        <input
+                            type="date"
+                            value={formData.date}
+                            onChange={e => setFormData({ ...formData, date: e.target.value })}
+                            className="w-full bg-white border-2 border-zen-light-gray rounded-lg text-sm px-3 py-2 text-zen-stone focus:border-zen-moss focus:ring-2 focus:ring-zen-moss/20 outline-none"
+                        />
+                    </div>
+
+                    <div>
+                        <label className="block text-xs font-medium text-zen-gray uppercase tracking-wider mb-2">Tags (comma-separated)</label>
+                        <input
+                            type="text"
+                            value={tagInput}
+                            onChange={e => setTagInput(e.target.value)}
+                            className="w-full bg-white border-2 border-zen-light-gray rounded-lg text-sm px-3 py-2 text-zen-stone focus:border-zen-moss focus:ring-2 focus:ring-zen-moss/20 outline-none"
+                            placeholder="fintech, banking, innovation"
+                        />
+                    </div>
+
+                    <div>
+                        <label className="block text-xs font-medium text-zen-gray uppercase tracking-wider mb-2">Cover Image</label>
+
+                        {/* Toggle between URL and File Upload */}
+                        <div className="flex gap-2 mb-3">
+                            <button
+                                onClick={() => setUploadMode('url')}
+                                className={`flex-1 px-3 py-1.5 rounded text-xs font-medium transition-colors ${uploadMode === 'url'
+                                    ? 'bg-zen-stone text-white'
+                                    : 'bg-zen-light-gray text-zen-gray hover:bg-zen-gray/20'
+                                    }`}
+                            >
+                                <LinkIcon className="w-3 h-3 inline mr-1" />
+                                URL
+                            </button>
+                            <button
+                                onClick={() => setUploadMode('file')}
+                                className={`flex-1 px-3 py-1.5 rounded text-xs font-medium transition-colors ${uploadMode === 'file'
+                                    ? 'bg-zen-stone text-white'
+                                    : 'bg-zen-light-gray text-zen-gray hover:bg-zen-gray/20'
+                                    }`}
+                            >
+                                <Upload className="w-3 h-3 inline mr-1" />
+                                Upload
+                            </button>
                         </div>
 
                         {uploadMode === 'url' ? (
@@ -181,7 +221,7 @@ export function Editor() {
                                 type="text"
                                 value={formData.coverImage || ''}
                                 onChange={e => setFormData({ ...formData, coverImage: e.target.value })}
-                                className="w-full bg-slate-800 border-slate-700 rounded-lg text-sm px-3 py-2 text-slate-100"
+                                className="w-full bg-white border-2 border-zen-light-gray rounded-lg text-sm px-3 py-2 text-zen-stone focus:border-zen-moss focus:ring-2 focus:ring-zen-moss/20 outline-none"
                                 placeholder="https://..."
                             />
                         ) : (
@@ -190,14 +230,14 @@ export function Editor() {
                                     type="file"
                                     accept="image/*"
                                     onChange={e => setSelectedFile(e.target.files?.[0] || null)}
-                                    className="w-full bg-slate-800 border-slate-700 rounded-lg text-sm px-3 py-2 text-slate-100 file:mr-4 file:py-1 file:px-3 file:rounded file:border-0 file:text-sm file:bg-primary-500 file:text-white hover:file:bg-primary-600 file:cursor-pointer"
+                                    className="w-full text-sm text-zen-gray file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-medium file:bg-zen-light-gray file:text-zen-stone hover:file:bg-zen-gray/20"
                                 />
                                 {selectedFile && (
                                     <Button
                                         onClick={handleImageUpload}
                                         disabled={uploading}
                                         size="sm"
-                                        className="w-full"
+                                        className="w-full bg-zen-moss-dark hover:bg-zen-moss text-white"
                                     >
                                         {uploading ? (
                                             <>
@@ -216,51 +256,40 @@ export function Editor() {
                         )}
 
                         {formData.coverImage && (
-                            <div className="mt-2">
+                            <div className="mt-3">
                                 <img
                                     src={formData.coverImage}
                                     alt="Cover preview"
-                                    className="w-full h-32 object-cover rounded-lg border border-slate-700"
-                                    onError={(e) => {
-                                        e.currentTarget.style.display = 'none';
-                                    }}
+                                    className="w-full h-32 object-cover rounded-lg border-2 border-zen-light-gray"
                                 />
                             </div>
                         )}
                     </div>
 
                     <div>
-                        <label className="block text-xs font-medium text-slate-500 uppercase tracking-wider mb-2">External Content URL</label>
+                        <label className="block text-xs font-medium text-zen-gray uppercase tracking-wider mb-2">External URL (optional)</label>
                         <input
                             type="text"
                             value={formData.externalUrl || ''}
                             onChange={e => setFormData({ ...formData, externalUrl: e.target.value })}
-                            className="w-full bg-slate-800 border-slate-700 rounded-lg text-sm px-3 py-2 text-slate-100"
-                            placeholder="https://... (Optional)"
+                            className="w-full bg-white border-2 border-zen-light-gray rounded-lg text-sm px-3 py-2 text-zen-stone focus:border-zen-moss focus:ring-2 focus:ring-zen-moss/20 outline-none"
+                            placeholder="https://..."
                         />
-                        <p className="text-[10px] text-slate-500 mt-1">If set, this post will link to this URL.</p>
-                    </div>
-
-                    <div>
-                        <label className="block text-xs font-medium text-slate-500 uppercase tracking-wider mb-2">Tags (comma sep)</label>
-                        <input
-                            type="text"
-                            value={tagInput}
-                            onChange={e => setTagInput(e.target.value)}
-                            className="w-full bg-slate-800 border-slate-700 rounded-lg text-sm px-3 py-2 text-slate-100"
-                            placeholder="fintech, react, crypto"
-                        />
+                        <p className="text-xs text-zen-gray mt-1">Link to external article source</p>
                     </div>
                 </div>
 
-                {/* Main Editor */}
-                <div className="flex-grow h-[calc(100vh-64px)]">
-                    <textarea
-                        value={formData.content}
-                        onChange={e => setFormData({ ...formData, content: e.target.value })}
-                        className="w-full h-full bg-slate-950 p-8 text-lg font-mono text-slate-300 focus:outline-none resize-none"
-                        placeholder="# Write your masterpiece..."
-                    />
+                {/* Content Editor */}
+                <div className="flex-grow p-6 overflow-y-auto h-[calc(100vh-64px)]">
+                    <div className="max-w-4xl mx-auto">
+                        <label className="block text-xs font-medium text-zen-gray uppercase tracking-wider mb-3">Content (Markdown)</label>
+                        <textarea
+                            value={formData.content}
+                            onChange={e => setFormData({ ...formData, content: e.target.value })}
+                            className="w-full bg-white border-2 border-zen-light-gray rounded-lg text-sm px-4 py-3 text-zen-stone font-mono leading-relaxed min-h-[600px] resize-y focus:border-zen-moss focus:ring-2 focus:ring-zen-moss/20 outline-none"
+                            placeholder="# Your content here...&#10;&#10;Write your blog post in Markdown format."
+                        />
+                    </div>
                 </div>
             </div>
         </div>

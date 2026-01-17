@@ -1,3 +1,4 @@
+import { RockGarden } from '../components/RockGarden';
 import { Button } from '../components/Button';
 import { ArrowRight, Linkedin } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -5,66 +6,91 @@ import { Experience } from '../components/Experience';
 
 export function Home() {
     return (
-        <div className="flex flex-col min-h-[calc(100vh-80px)] justify-center">
-            {/* Hero / About Section */}
-            <section className="relative py-12 md:py-24 overflow-hidden">
-                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-primary-900/20 via-slate-950 to-slate-950 -z-10" />
+        <div className="bg-zen-white">
+            {/* Hero Section with Rock Garden */}
+            <section className="relative min-h-screen flex flex-col items-center justify-center px-4">
+                {/* Oversized Quote */}
+                <div className="absolute top-32 left-0 right-0 text-center px-4 md:px-zen-lg z-10">
+                    <blockquote className="text-4xl md:text-6xl lg:text-7xl font-serif font-medium italic text-zen-stone leading-tight max-w-5xl mx-auto">
+                        "Better a short life as a rebel than a long life as a sheep"
+                    </blockquote>
+                    <p className="mt-8 text-zen-gray text-sm md:text-base tracking-wider uppercase">
+                        Marek Ditz
+                    </p>
+                </div>
 
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex flex-col md:flex-row items-center gap-12 lg:gap-20">
+                {/* Rock Garden */}
+                <div className="mt-32">
+                    <RockGarden />
+                </div>
 
-                        {/* Image Column */}
-                        <div className="flex-shrink-0 relative group">
-                            <div className="absolute -inset-4 bg-gradient-to-r from-primary-500 to-cyan-500 rounded-full opacity-20 group-hover:opacity-40 blur-2xl transition-opacity duration-500" />
-                            <div className="relative w-64 h-64 md:w-80 md:h-80 lg:w-96 lg:h-96 rounded-full p-2 border-2 border-slate-800 bg-slate-950/50 backdrop-blur-sm">
-                                <img
-                                    src="/images/portrait.jpg"
-                                    alt="Marek Ditz"
-                                    className="w-full h-full object-cover rounded-full grayscale group-hover:grayscale-0 transition-all duration-500 ease-out"
-                                />
-                            </div>
-                        </div>
-
-                        {/* Content Column */}
-                        <div className="flex-1 text-center md:text-left">
-                            <div className="inline-flex items-center px-3 py-1 rounded-full bg-slate-900 border border-slate-800 text-sm text-primary-400 mb-6 font-medium">
-                                CEO @ Partners Banka a.s.
-                            </div>
-
-                            <h1 className="text-4xl md:text-6xl font-bold tracking-tight mb-6 text-white">
-                                Marek Ditz
-                            </h1>
-
-                            <div className="prose prose-lg prose-invert text-slate-400 mb-8 max-w-2xl mx-auto md:mx-0 leading-relaxed">
-                                <p>
-                                    CEO of <strong className="text-white">Partners Banka a.s.</strong>, the first neobank established in the Czech Republic in 2024.
-                                </p>
-                                <p>
-                                    Combining leading technology with personalised advisory services. With <strong className="text-white">30+ years of experience</strong> in banking and finance, specializing in IT architecture, innovations, M&A, strategic project management, restructuring, crisis management, corporate banking, transformation, open banking, and fintech.
-                                </p>
-                            </div>
-
-                            <div className="flex flex-col sm:flex-row items-center gap-4 justify-center md:justify-start">
-                                <Link to="/blog">
-                                    <Button size="lg" className="group min-w-[160px]">
-                                        Read Insights
-                                        <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                                    </Button>
-                                </Link>
-                                <a href="https://www.linkedin.com/in/marekditz/" target="_blank" rel="noopener noreferrer">
-                                    <Button variant="secondary" size="lg" className="min-w-[160px]">
-                                        <Linkedin className="mr-2 w-5 h-5" /> LinkedIn
-                                    </Button>
-                                </a>
-                            </div>
-                        </div>
-
+                {/* Minimal CTA */}
+                <div className="absolute bottom-32 left-0 right-0 flex flex-col items-center gap-6">
+                    <p className="text-zen-gray text-sm tracking-widest uppercase">
+                        CEO, Partners Banka a.s.
+                    </p>
+                    <div className="flex gap-4">
+                        <Link to="/blog">
+                            <Button
+                                size="lg"
+                                className="bg-zen-stone hover:bg-zen-gray text-zen-white border-none"
+                            >
+                                Cultivated Thoughts
+                                <ArrowRight className="ml-2 w-4 h-4" />
+                            </Button>
+                        </Link>
+                        <a href="https://www.linkedin.com/in/marekditz/" target="_blank" rel="noopener noreferrer" className="group relative">
+                            <Button
+                                size="lg"
+                                className="relative bg-white border-2 border-zen-stone text-zen-stone hover:bg-zen-stone hover:text-white hover:border-zen-stone transition-all duration-300 hover:scale-105 hover:shadow-xl overflow-hidden"
+                            >
+                                <span className="relative z-10 flex items-center gap-2">
+                                    <Linkedin className="w-5 h-5" />
+                                    Connect on LinkedIn
+                                </span>
+                                {/* Ripple effect on hover */}
+                                <div className="absolute inset-0 bg-zen-moss/10 scale-0 group-hover:scale-100 transition-transform duration-500 rounded-lg" />
+                            </Button>
+                        </a>
                     </div>
                 </div>
             </section>
 
-            {/* Resume / Experience Section */}
+            {/* About Section - Minimal */}
+            <section className="py-zen-xl px-4 md:px-zen-lg">
+                <div className="max-w-4xl mx-auto">
+                    <h2 className="text-5xl md:text-6xl font-serif text-zen-stone mb-zen-md text-center">
+                        The Gardener
+                    </h2>
+                    <div className="space-y-8 text-zen-gray text-lg md:text-xl leading-relaxed">
+                        <p className="text-center max-w-3xl mx-auto">
+                            Building the first neobank in the Czech Republic. Combining leading technology
+                            with personalised advisory services.
+                        </p>
+                        <p className="text-center max-w-3xl mx-auto">
+                            With <span className="text-zen-stone font-medium">30+ years of experience</span> in
+                            banking and finance, specializing in IT architecture, innovations, M&A, strategic
+                            project management, and fintech transformation.
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            {/* Experience Section */}
             <Experience />
+
+            {/* Philosophy Section */}
+            <section className="py-zen-xl px-4 md:px-zen-lg bg-zen-light-gray/30">
+                <div className="max-w-4xl mx-auto text-center">
+                    <h2 className="text-4xl md:text-5xl font-serif text-zen-stone mb-zen-md">
+                        Leadership Philosophy
+                    </h2>
+                    <blockquote className="text-2xl md:text-3xl font-serif italic text-zen-gray leading-relaxed max-w-2xl mx-auto">
+                        "A leader should provide the environment, not the command.
+                        Like a gardener tending to a rock garden—invisible until needed."
+                    </blockquote>
+                </div>
+            </section>
         </div>
     );
 }

@@ -1,109 +1,128 @@
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { getPostBySlug, type Post } from '../lib/posts';
+import { getPostBySlug } from '../lib/posts';
+import { categorizePostByAge } from '../lib/seasonalPosts';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { Loader2, ArrowLeft, ArrowRight, Calendar, Tag } from 'lucide-react';
+import { ArrowLeft, Calendar, ArrowRight } from 'lucide-react';
 import { Button } from '../components/Button';
 
 export function BlogPost() {
-    const { slug } = useParams();
-    const [post, setPost] = useState<Post | null>(null);
-    const [loading, setLoading] = useState(true);
+    const { slug } = useParams<{ slug: string }>();
+    const [post, setPost] = useState<any>(null);
 
     useEffect(() => {
-        if (slug) {
-            getPostBySlug(slug).then(p => {
-                setPost(p);
-                setLoading(false);
-            });
-        }
+        const loadPost = async () => {
+            if (slug) {
+                const foundPost = await getPostBySlug(slug);
+                if (foundPost) {
+                    setPost(categorizePostByAge(foundPost));
+                }
+            }
+        };
+        loadPost();
     }, [slug]);
-
-    if (loading) {
-        return (
-            <div className="min-h-screen bg-slate-950 flex items-center justify-center">
-                <Loader2 className="w-8 h-8 text-primary-500 animate-spin" />
-            </div>
-        );
-    }
 
     if (!post) {
         return (
-            <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center text-slate-400">
-                <h1 className="text-2xl font-bold text-white mb-4">Post not found</h1>
-                <Link to="/blog"><Button>Return to Blog</Button></Link>
+            <div className="min-h-screen bg-zen-white flex items-center justify-center">
+                <p className="text-zen-gray">Loading...</p>
             </div>
         );
     }
 
     return (
-        <article className="min-h-screen bg-slate-950 pb-24">
-            {/* Header Image */}
-            {post.coverImage && (
-                <div className="w-full h-80 md:h-[500px] overflow-hidden relative">
-                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950 to-transparent z-10" />
-                    <img
-                        src={post.coverImage}
-                        alt={post.title}
-                        className="w-full h-full object-cover"
-                    />
-                </div>
-            )}
-
-            <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 relative z-20 -mt-24">
-                <div className="mb-8">
-                    <Link to="/blog">
-                        <Button variant="ghost" className="text-slate-300 hover:text-white mb-6 pl-0">
-                            <ArrowLeft className="w-4 h-4 mr-2" /> Back to Insights
-                        </Button>
+        <div className="min-h-screen bg-zen-white">
+            {/* Hero Section */}
+            <div className="relative pt-32 pb-16 px-4">
+                <div className="max-w-4xl mx-auto">
+                    {/* Back Button */}
+                    <Link to="/blog" className="inline-flex items-center text-zen-gray hover:text-zen-stone mb-8 transition-colors">
+                        <ArrowLeft className="w-4 h-4 mr-2" />
+                        Back to Cultivated Thoughts
                     </Link>
 
-                    <div className="flex gap-2 mb-6">
-                        {post.tags.map(tag => (
-                            <span key={tag} className="flex items-center text-xs font-medium text-primary-400 bg-primary-900/30 px-3 py-1 rounded-full border border-primary-500/20">
-                                <Tag className="w-3 h-3 mr-1" /> {tag}
-                            </span>
-                        ))}
+                    {/* Growth Stage Badge */}
+                    <div className="inline-block bg-zen-light-gray px-4 py-2 rounded-full text-sm font-medium text-zen-stone mb-6">
+                        {post.growthStage === 'seed' && '🌱 Seed'}
+                        {post.growthStage === 'sapling' && '🌿 Sapling'}
+                        {post.growthStage === 'old-growth' && '🌳 Old Growth'}
                     </div>
 
-                    <h1 className="text-4xl md:text-5xl font-bold text-white mb-6 leading-tight">
+                    {/* Title */}
+                    <h1 className="text-5xl md:text-6xl lg:text-7xl font-serif text-zen-stone mb-8 leading-tight">
                         {post.title}
                     </h1>
 
-                    <div className="flex items-center gap-4 text-slate-400 text-sm border-b border-slate-800 pb-8">
-                        <span className="flex items-center">
-                            <Calendar className="w-4 h-4 mr-2" />
-                            {new Date(post.date).toLocaleDateString(undefined, {
-                                weekday: 'long',
+                    {/* Meta */}
+                    <div className="flex items-center gap-6 text-zen-gray mb-12">
+                        <div className="flex items-center gap-2">
+                            <Calendar className="w-4 h-4" />
+                            {new Date(post.date).toLocaleDateString('en-US', {
                                 year: 'numeric',
                                 month: 'long',
-                                day: 'numeric'
+                                day: 'numeric',
                             })}
-                        </span>
-                    </div>
-                </div>
-
-                <div className="prose prose-invert prose-lg prose-slate max-w-none prose-headings:text-white prose-a:text-primary-400 hover:prose-a:text-primary-300 prose-img:rounded-xl">
-                    {post.externalUrl && (
-                        <div className="not-prose mb-8 p-6 rounded-xl bg-slate-900 border border-slate-800 flex flex-col md:flex-row items-center justify-between gap-4">
-                            <div>
-                                <h3 className="text-lg font-semibold text-white mb-1">Read the full article</h3>
-                                <p className="text-slate-400 text-sm">This is an external source. Click the button to view the original content.</p>
+                        </div>
+                        {post.tags && post.tags.length > 0 && (
+                            <div className="flex gap-2">
+                                {post.tags.map((tag: string) => (
+                                    <span key={tag} className="text-xs px-3 py-1 bg-zen-light-gray rounded-full">
+                                        {tag}
+                                    </span>
+                                ))}
                             </div>
+                        )}
+                    </div>
+
+                    {/* Cover Image */}
+                    {post.coverImage && (
+                        <div className="mb-16 rounded-lg overflow-hidden">
+                            <img
+                                src={post.coverImage}
+                                alt={post.title}
+                                className="w-full h-auto"
+                            />
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            {/* Content */}
+            <article className="pb-24 px-4">
+                <div className="max-w-3xl mx-auto">
+                    {/* External URL Banner */}
+                    {post.externalUrl && (
+                        <div className="mb-12 p-8 rounded-lg bg-zen-light-gray/50 border border-zen-light-gray">
+                            <h3 className="text-xl font-serif text-zen-stone mb-2">Read the full article</h3>
+                            <p className="text-zen-gray text-sm mb-4">
+                                This is an external source. Click the button to view the original content.
+                            </p>
                             <a href={post.externalUrl} target="_blank" rel="noopener noreferrer">
-                                <Button className="whitespace-nowrap">
+                                <Button className="bg-zen-stone hover:bg-zen-gray text-zen-white">
                                     Visit Website
                                     <ArrowRight className="w-4 h-4 ml-2 -rotate-45" />
                                 </Button>
                             </a>
                         </div>
                     )}
-                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                        {post.content}
-                    </ReactMarkdown>
+
+                    {/* Markdown Content */}
+                    <div className="prose prose-lg prose-stone max-w-none
+                        prose-headings:font-serif prose-headings:text-zen-stone
+                        prose-p:text-zen-gray prose-p:leading-relaxed prose-p:text-lg
+                        prose-a:text-zen-moss-dark prose-a:no-underline hover:prose-a:underline
+                        prose-strong:text-zen-stone
+                        prose-blockquote:border-l-zen-moss prose-blockquote:font-serif prose-blockquote:italic
+                        prose-code:text-zen-stone prose-code:bg-zen-light-gray
+                        prose-img:rounded-lg"
+                    >
+                        <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                            {post.content}
+                        </ReactMarkdown>
+                    </div>
                 </div>
-            </div>
-        </article>
+            </article>
+        </div>
     );
 }

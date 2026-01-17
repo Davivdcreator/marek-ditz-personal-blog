@@ -1,121 +1,168 @@
 import { useState, useEffect } from 'react';
-import { getAllPosts, type Post } from '../lib/posts';
+import { getAllPosts } from '../lib/posts';
+import { categorizePostByAge, getGrowthStageLabel, getGrowthStageDescription, type SeasonalPost, type GrowthStage } from '../lib/seasonalPosts';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Search, Calendar } from 'lucide-react';
 import { Button } from '../components/Button';
+import { ArrowRight, Calendar } from 'lucide-react';
 
 export function Blog() {
-    const [posts, setPosts] = useState<Post[]>([]);
-    const [filter, setFilter] = useState('');
-    const [loading, setLoading] = useState(true);
+    const [posts, setPosts] = useState<SeasonalPost[]>([]);
+    const [selectedStage, setSelectedStage] = useState<GrowthStage | 'all'>('all');
 
     useEffect(() => {
-        getAllPosts().then(data => {
-            setPosts(data);
-            setLoading(false);
-        });
+        const loadPosts = async () => {
+            const allPosts = await getAllPosts();
+            const seasonalPosts = allPosts.map(categorizePostByAge);
+            setPosts(seasonalPosts);
+        };
+        loadPosts();
     }, []);
 
-    const filteredPosts = posts.filter(post =>
-        post.title.toLowerCase().includes(filter.toLowerCase()) ||
-        post.tags.some(tag => tag.toLowerCase().includes(filter.toLowerCase()))
-    );
+    const filteredPosts = selectedStage === 'all'
+        ? posts
+        : posts.filter(p => p.growthStage === selectedStage);
+
+    const stages: Array<GrowthStage | 'all'> = ['all', 'seed', 'sapling', 'old-growth'];
 
     return (
-        <div className="min-h-screen bg-slate-950">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
+        <div className="min-h-screen bg-zen-white pt-32 pb-24">
+            <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
                 {/* Header */}
-                <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-6">
-                    <div>
-                        <h1 className="text-4xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400 mb-4">
-                            Financial Insights
-                        </h1>
-                        <p className="text-slate-400 max-w-xl text-lg">
-                            Expert analysis on fintech architecture, security, and the future of digital money.
-                        </p>
-                    </div>
-
-                    <div className="relative w-full md:w-80">
-                        <input
-                            type="text"
-                            placeholder="Search articles..."
-                            value={filter}
-                            onChange={(e) => setFilter(e.target.value)}
-                            className="w-full bg-slate-900 border border-slate-800 rounded-lg pl-10 pr-4 py-3 text-slate-100 focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500 transition-all outline-none"
-                        />
-                        <Search className="absolute left-3 top-3.5 w-5 h-5 text-slate-500" />
-                    </div>
+                <div className="text-center mb-zen-lg">
+                    <h1 className="text-6xl md:text-7xl font-serif text-zen-stone mb-6">
+                        Cultivated Thoughts
+                    </h1>
+                    <p className="text-xl text-zen-gray max-w-2xl mx-auto leading-relaxed">
+                        Ideas grow like plants in a garden. Some are fresh seeds, others are developing saplings,
+                        and a few have matured into old growth wisdom.
+                    </p>
                 </div>
 
-                {/* Grid */}
-                {loading ? (
-                    <div className="text-center py-20 text-slate-500">Loading insights...</div>
-                ) : (
-                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                        {filteredPosts.map((post) => (
-                            <article key={post.slug} className="group bg-slate-900/40 border border-slate-800 rounded-2xl overflow-hidden hover:border-primary-500/30 transition-all duration-300 hover:shadow-2xl hover:shadow-primary-900/10 hover:-translate-y-1">
-                                {post.coverImage && (
-                                    <div className="h-48 overflow-hidden">
-                                        <img
-                                            src={post.coverImage}
-                                            alt={post.title}
-                                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                                        />
+                {/* Growth Stage Filter */}
+                <div className="flex flex-wrap justify-center gap-4 mb-zen-md">
+                    {stages.map((stage) => (
+                        <button
+                            key={stage}
+                            onClick={() => setSelectedStage(stage)}
+                            className={`px-6 py-3 rounded-full text-sm font-medium transition-all duration-300 ${selectedStage === stage
+                                ? 'bg-zen-stone text-zen-white'
+                                : 'bg-zen-light-gray text-zen-gray hover:bg-zen-gray hover:text-zen-white'
+                                }`}
+                        >
+                            {stage === 'all' ? 'All Thoughts' : getGrowthStageLabel(stage)}
+                        </button>
+                    ))}
+                </div>
+
+                {/* Stage Description */}
+                {selectedStage !== 'all' && (
+                    <div className="text-center mb-zen-md">
+                        <p className="text-zen-gray italic">
+                            {getGrowthStageDescription(selectedStage)}
+                        </p>
+                    </div>
+                )}
+
+                {/* Posts Grid */}
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    {filteredPosts.map((post, index) => (
+                        <article
+                            key={post.slug}
+                            className="group bg-white border border-zen-light-gray rounded-lg overflow-hidden hover:shadow-xl transition-all duration-500 hover:-translate-y-2"
+                            style={{
+                                animationDelay: `${index * 100}ms`,
+                            }}
+                        >
+                            {/* Cover Image */}
+                            {post.coverImage && (
+                                <div className="relative h-48 overflow-hidden bg-zen-light-gray">
+                                    <img
+                                        src={post.coverImage}
+                                        alt={post.title}
+                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                                    />
+                                    {/* Growth Stage Badge */}
+                                    <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-medium text-zen-stone">
+                                        {post.growthStage === 'seed' && '🌱 Seed'}
+                                        {post.growthStage === 'sapling' && '🌿 Sapling'}
+                                        {post.growthStage === 'old-growth' && '🌳 Old Growth'}
                                     </div>
+                                </div>
+                            )}
+
+                            {/* Content */}
+                            <div className="p-6">
+                                {/* Date */}
+                                <div className="flex items-center gap-2 text-xs text-zen-gray mb-3">
+                                    <Calendar className="w-3 h-3" />
+                                    {new Date(post.date).toLocaleDateString('en-US', {
+                                        year: 'numeric',
+                                        month: 'long',
+                                        day: 'numeric',
+                                    })}
+                                </div>
+
+                                {/* Title */}
+                                {post.externalUrl ? (
+                                    <a href={post.externalUrl} target="_blank" rel="noopener noreferrer" className="block">
+                                        <h2 className="text-2xl font-serif text-zen-stone mb-3 group-hover:text-zen-moss-dark transition-colors">
+                                            {post.title}
+                                        </h2>
+                                    </a>
+                                ) : (
+                                    <Link to={`/blog/${post.slug}`}>
+                                        <h2 className="text-2xl font-serif text-zen-stone mb-3 group-hover:text-zen-moss-dark transition-colors">
+                                            {post.title}
+                                        </h2>
+                                    </Link>
                                 )}
-                                <div className="p-6 flex flex-col h-[calc(100%-12rem)]">
-                                    <div className="flex gap-2 mb-4 overflow-x-auto no-scrollbar">
-                                        {post.tags.map(tag => (
-                                            <span key={tag} className="text-xs font-medium text-primary-400 bg-primary-900/20 px-2 py-1 rounded-full whitespace-nowrap">
-                                                #{tag}
+
+                                {/* Description */}
+                                <p className="text-zen-gray text-sm leading-relaxed mb-4 line-clamp-3">
+                                    {post.description}
+                                </p>
+
+                                {/* Tags */}
+                                {post.tags && post.tags.length > 0 && (
+                                    <div className="flex flex-wrap gap-2 mb-4">
+                                        {post.tags.slice(0, 3).map((tag) => (
+                                            <span
+                                                key={tag}
+                                                className="text-xs px-2 py-1 bg-zen-light-gray text-zen-gray rounded"
+                                            >
+                                                {tag}
                                             </span>
                                         ))}
                                     </div>
+                                )}
 
-                                    {post.externalUrl ? (
-                                        <a href={post.externalUrl} target="_blank" rel="noopener noreferrer" className="block">
-                                            <h2 className="text-xl font-bold mb-3 group-hover:text-primary-400 transition-colors flex items-start gap-2">
-                                                {post.title}
-                                                <ArrowRight className="w-4 h-4 mt-1.5 -rotate-45 shrink-0 opacity-50" />
-                                            </h2>
-                                        </a>
-                                    ) : (
-                                        <Link to={`/blog/${post.slug}`}>
-                                            <h2 className="text-xl font-bold mb-3 group-hover:text-primary-400 transition-colors">
-                                                {post.title}
-                                            </h2>
-                                        </Link>
-                                    )}
+                                {/* Read More */}
+                                {post.externalUrl ? (
+                                    <a href={post.externalUrl} target="_blank" rel="noopener noreferrer">
+                                        <Button variant="ghost" size="sm" className="group/btn text-zen-stone hover:text-zen-moss-dark">
+                                            Visit Source
+                                            <ArrowRight className="w-4 h-4 ml-2 -rotate-45 group-hover/btn:translate-x-1 group-hover/btn:-translate-y-1 transition-transform" />
+                                        </Button>
+                                    </a>
+                                ) : (
+                                    <Link to={`/blog/${post.slug}`}>
+                                        <Button variant="ghost" size="sm" className="group/btn text-zen-stone hover:text-zen-moss-dark">
+                                            Read
+                                            <ArrowRight className="w-4 h-4 ml-2 group-hover/btn:translate-x-1 transition-transform" />
+                                        </Button>
+                                    </Link>
+                                )}
+                            </div>
+                        </article>
+                    ))}
+                </div>
 
-                                    <p className="text-slate-400 mb-6 text-sm line-clamp-3 flex-grow">
-                                        {post.description}
-                                    </p>
-
-                                    <div className="flex items-center justify-between mt-auto pt-4 border-t border-slate-800/50">
-                                        <div className="flex items-center text-slate-500 text-xs gap-1">
-                                            <Calendar className="w-4 h-4" />
-                                            {new Date(post.date).toLocaleDateString()}
-                                        </div>
-
-                                        {post.externalUrl ? (
-                                            <a href={post.externalUrl} target="_blank" rel="noopener noreferrer">
-                                                <Button variant="ghost" size="sm" className="group/btn">
-                                                    Visit Source
-                                                    <ArrowRight className="w-4 h-4 ml-2 -rotate-45 group-hover/btn:translate-x-1 group-hover/btn:-translate-y-1 transition-transform" />
-                                                </Button>
-                                            </a>
-                                        ) : (
-                                            <Link to={`/blog/${post.slug}`}>
-                                                <Button variant="ghost" size="sm" className="group/btn">
-                                                    Read
-                                                    <ArrowRight className="w-4 h-4 ml-2 group-hover/btn:translate-x-1 transition-transform" />
-                                                </Button>
-                                            </Link>
-                                        )}
-                                    </div>
-                                </div>
-                            </article>
-                        ))}
+                {/* Empty State */}
+                {filteredPosts.length === 0 && (
+                    <div className="text-center py-zen-lg">
+                        <p className="text-zen-gray text-lg">
+                            No thoughts in this growth stage yet.
+                        </p>
                     </div>
                 )}
             </div>

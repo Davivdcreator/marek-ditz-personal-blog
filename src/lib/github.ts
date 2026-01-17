@@ -14,6 +14,7 @@ export interface BlogPost {
     description: string;
     coverImage?: string;
     tags?: string[];
+    growthStage?: 'seed' | 'sapling' | 'old-growth';
     content: string;
     sha?: string; // For updates
     externalUrl?: string;

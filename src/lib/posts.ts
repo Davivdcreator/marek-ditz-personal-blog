@@ -13,6 +13,7 @@ export interface Post {
     tags: string[];
     content: string;
     coverImage?: string;
+    growthStage?: 'seed' | 'sapling' | 'old-growth';
     externalUrl?: string;
 }
 
