@@ -51,7 +51,7 @@ export function Home() {
                                         <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
                                     </Button>
                                 </Link>
-                                <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer">
+                                <a href="https://www.linkedin.com/in/marekditz/" target="_blank" rel="noopener noreferrer">
                                     <Button variant="secondary" size="lg" className="min-w-[160px]">
                                         <Linkedin className="mr-2 w-5 h-5" /> LinkedIn
                                     </Button>
