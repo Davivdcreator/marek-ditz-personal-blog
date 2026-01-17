@@ -87,7 +87,7 @@ export class GitHubService {
             description: post.description,
             coverImage: post.coverImage,
             tags: post.tags,
-            externalUrl: post.externalUrl,
+            ...(post.externalUrl ? { externalUrl: post.externalUrl } : {}),
         };
 
         const fileContent = matter.stringify(post.content, frontmatter);
