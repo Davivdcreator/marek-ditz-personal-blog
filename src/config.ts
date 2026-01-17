@@ -3,7 +3,7 @@ export const SITE_CONFIG = {
     description: 'Building trust in digital finance.',
     github: {
         owner: 'Davivdcreator',
-        repo: 'Marekditz-personal-blog',
+        repo: 'marek-ditz-personal-blog',
         branch: 'main'
     }
 };
